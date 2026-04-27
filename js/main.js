@@ -76,7 +76,7 @@
 
   // Manual rotation: override the CSS animation by writing inline transform
   // tiltX: angle around X-axis (-38 = normal orbit view, 0 = straight-on for selected)
-  const setRotation = (index, tiltX = -38) => {
+  const setRotation = (index, tiltX = -30) => {
     if (!ring) return;
     currentIndex = ((index % cardCount) + cardCount) % cardCount;
     const angle = -currentIndex * stepDeg;
