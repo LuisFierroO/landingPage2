@@ -1131,7 +1131,6 @@
       transform:
         rotateY(calc(var(--i) * (360deg / var(--card-count)))) translateZ(var(--orbit-r));
       transition: box-shadow .25s, transform .4s cubic-bezier(.2, .7, .2, 1), opacity .3s, filter .3s;
-      cursor: pointer;
       backface-visibility: visible;
     }
 
@@ -1729,9 +1728,9 @@
       background: #1a1814;
       color: #ede8dc;
     }
-  
-/* ---------- Body overrides ---------- */
-body {
-  background-color: #080c15;
-  cursor: crosshair;
-}
+
+    /* ---------- Body overrides ---------- */
+    body {
+      background-color: #080c15;
+      cursor: crosshair;
+    }
