@@ -205,10 +205,22 @@
         form.reportValidity();
         return;
       }
-      if (msg) {
-        msg.removeAttribute("data-state");
-        msg.textContent = "Mensaje enviado · te respondo en menos de 24 h hábiles.";
-      }
+
+      fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, phone, desc })
+      }).then(() => {
+        if (msg) {
+          msg.removeAttribute("data-state");
+          msg.textContent = "Mensaje enviado · te respondo en menos de 24 h hábiles.";
+        }
+      }).catch((error) => {
+        if (msg) {
+          msg.textContent = "Error al enviar el mensaje · intenta de nuevo.";
+          msg.setAttribute("data-state", "error");
+        }
+      });
       form.reset();
     });
   }
