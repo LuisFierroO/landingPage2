@@ -195,8 +195,33 @@
   const form = document.getElementById("contactForm");
   if (form) {
     const msg = form.querySelector("[data-form-msg]");
-    form.addEventListener("submit", (e) => {
+    const emailInput = form.querySelector('input[name="email"]');
+    const submitBtn = form.querySelector('[type="submit"]');
+
+    const isValidEmail = (v) =>
+      /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(v.trim());
+
+    if (emailInput) {
+      emailInput.addEventListener("blur", () => {
+        if (emailInput.value && !isValidEmail(emailInput.value)) {
+          emailInput.setCustomValidity("Ingresa un correo electrónico válido (ej: nombre@dominio.com).");
+          emailInput.reportValidity();
+        } else {
+          emailInput.setCustomValidity("");
+        }
+      });
+      emailInput.addEventListener("input", () => emailInput.setCustomValidity(""));
+    }
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      if (emailInput && !isValidEmail(emailInput.value)) {
+        emailInput.setCustomValidity("Ingresa un correo electrónico válido (ej: nombre@dominio.com).");
+        emailInput.reportValidity();
+        return;
+      }
+
       if (!form.checkValidity()) {
         if (msg) {
           msg.textContent = "Revisa los campos marcados — falta información.";
@@ -206,22 +231,38 @@
         return;
       }
 
-      fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone, desc })
-      }).then(() => {
-        if (msg) {
-          msg.removeAttribute("data-state");
-          msg.textContent = "Mensaje enviado · te respondo en menos de 24 h hábiles.";
+      if (submitBtn) submitBtn.disabled = true;
+      if (msg) {
+        msg.removeAttribute("data-state");
+        msg.textContent = "Enviando…";
+      }
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify(Object.fromEntries(formData)),
+        });
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          if (msg) {
+            msg.removeAttribute("data-state");
+            msg.textContent = "¡Mensaje enviado! Te respondo en menos de 24 h hábiles.";
+          }
+          form.reset();
+        } else {
+          throw new Error(result.message || "Error al enviar");
         }
-      }).catch((error) => {
+      } catch {
         if (msg) {
-          msg.textContent = "Error al enviar el mensaje · intenta de nuevo.";
+          msg.textContent = "Error al enviar — intenta de nuevo o escríbeme directamente.";
           msg.setAttribute("data-state", "error");
         }
-      });
-      form.reset();
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     });
   }
 })();
