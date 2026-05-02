@@ -239,14 +239,29 @@
 
       try {
         const formData = new FormData(form);
-        const response = await fetch("https://api.web3forms.com/submit", {
+        const nombre = formData.get("nombre") || "";
+        const etapa = formData.get("etapa") || "";
+        const mensaje = formData.get("mensaje") || "";
+        const ia = formData.get("ia") ? "IA Responsable: Sí" : "";
+        const desc = [
+          nombre ? `Nombre: ${nombre}` : "",
+          etapa ? `Etapa: ${etapa}` : "",
+          mensaje,
+          ia,
+        ].filter(Boolean).join("\n");
+
+        const response = await fetch("/api/contact", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify(Object.fromEntries(formData)),
+          body: JSON.stringify({
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            desc,
+          }),
         });
         const result = await response.json();
 
-        if (response.ok && result.success) {
+        if (response.ok) {
           if (msg) {
             msg.removeAttribute("data-state");
             msg.textContent = "¡Mensaje enviado! Te respondo en menos de 24 h hábiles.";
